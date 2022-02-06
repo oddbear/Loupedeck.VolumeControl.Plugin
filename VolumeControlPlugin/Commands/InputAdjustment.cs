@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 
-using AudioSwitcher.AudioApi;
-using AudioSwitcher.AudioApi.CoreAudio;
+using NAudio.CoreAudioApi;
 
 namespace Loupedeck.VolumeControlPlugin.Commands
 {
@@ -25,13 +24,15 @@ namespace Loupedeck.VolumeControlPlugin.Commands
             if (_plugin.NotificationService is null)
                 return false;
             
-            var inputs = _plugin.NotificationService.Devices
-                .Where(device => device.Value.IsCaptureDevice)
-                .ToArray();
+            var inputs = _plugin.NotificationService.GetDevices(DataFlow.Capture);
 
             foreach (var input in inputs)
             {
-                this.AddParameter(input.Key, input.Value.FullName, "Inputs");
+                //Friendly name can be custom name:
+                //FriendlyName: Playback (InterfaceName)
+                //DeviceFriendlyName: InterfaceName
+                //ID: {0.0.0.00000000}.{00000000-0000-0000-0000-000123456789}
+                this.AddParameter(input.ID, input.DeviceFriendlyName, "Inputs");
             }
 
             return true;
@@ -46,7 +47,7 @@ namespace Loupedeck.VolumeControlPlugin.Commands
             if (IsDisabled(device))
                 return;
 
-            device.ToggleMute();
+            device.AudioEndpointVolume.Mute = device.AudioEndpointVolume.Mute;
             base.ActionImageChanged(actionParameter);
         }
 
@@ -59,7 +60,7 @@ namespace Loupedeck.VolumeControlPlugin.Commands
             if (IsDisabled(device))
                 return;
 
-            device.Volume += ticks;
+            device.AudioEndpointVolume.MasterVolumeLevelScalar += ticks;
             base.ActionImageChanged(actionParameter);
         }
 
@@ -72,7 +73,7 @@ namespace Loupedeck.VolumeControlPlugin.Commands
             if (IsDisabled(device))
                 return null;
 
-            return device.Volume.ToString();
+            return device.AudioEndpointVolume.MasterVolumeLevelScalar.ToString();
         }
         
         protected override BitmapImage GetCommandImage(string actionParameter, PluginImageSize imageSize)
@@ -87,7 +88,7 @@ namespace Loupedeck.VolumeControlPlugin.Commands
             using (var bitmapBuilder = new BitmapBuilder(imageSize))
             {
                 var path = "Loupedeck.VolumeControlPlugin.Resources.VolumeControl.input-active-50.png";
-                if (device.IsMuted)
+                if (device.AudioEndpointVolume.Mute)
                     path = "Loupedeck.VolumeControlPlugin.Resources.VolumeControl.input-muted-50.png";
                 if (IsDisabled(device))
                     path = "Loupedeck.VolumeControlPlugin.Resources.VolumeControl.input-disabled-50.png";
@@ -100,28 +101,29 @@ namespace Loupedeck.VolumeControlPlugin.Commands
                 bitmapBuilder.Translate(-6, 0);
 
                 bitmapBuilder.Translate(0, 18);
-                bitmapBuilder.DrawText(device.Name, BitmapColor.White, 10); //TODO: Name and alignment.
+                bitmapBuilder.DrawText(device.DeviceFriendlyName, BitmapColor.White, 10); //TODO: Name and alignment.
 
                 return bitmapBuilder.ToImage();
             }
         }
 
-        private bool IsDisabled(CoreAudioDevice device)
+        private bool IsDisabled(MMDevice device)
         {
             if (device is null)
+                return true;
+
+            if (device.InstanceId == "Unknown")
                 return true;
 
             return device.State != DeviceState.Active;
         }
 
-        private CoreAudioDevice GetDevice(string actionParameter)
+        private MMDevice GetDevice(string actionParameter)
         {
             if (string.IsNullOrWhiteSpace(actionParameter))
                 return null;
 
-            return _plugin.NotificationService.Devices.TryGetValue(actionParameter, out var device)
-                ? device
-                : null;
+            return _plugin.NotificationService.GetDevice(actionParameter);
         }
     }
 }
