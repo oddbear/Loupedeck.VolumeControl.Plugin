@@ -313,3 +313,7 @@ testem.log
 # Affinity Photo
 /Resources/*.afphoto
 /Resources/*.svg
+
+#Raw image resources
+*.afphoto
+*.afdesign

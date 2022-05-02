@@ -67,12 +67,15 @@ namespace Loupedeck.VolumeControlPlugin.Commands
         {
             if (string.IsNullOrWhiteSpace(actionParameter))
                 return null;
-
+            
             var device = GetDevice(actionParameter);
             if (IsDisabled(device))
-                return null;
+                return "disabled";
 
-            return device.Volume.ToString();
+            if (device.IsMuted)
+                return "muted";
+
+            return device.Volume.ToString("###'%'");
         }
         
         protected override BitmapImage GetCommandImage(string actionParameter, PluginImageSize imageSize)
@@ -93,14 +96,8 @@ namespace Loupedeck.VolumeControlPlugin.Commands
                     path = "Loupedeck.VolumeControlPlugin.Resources.VolumeControl.input-disabled-50.png";
 
                 var background = EmbeddedResources.ReadImage(path);
-                bitmapBuilder.Translate(6, 0);
-                bitmapBuilder.Scale(0.8f, 0.8f);
                 bitmapBuilder.SetBackgroundImage(background);
-                bitmapBuilder.Scale(1.25f, 1.25f);
-                bitmapBuilder.Translate(-6, 0);
-
-                bitmapBuilder.Translate(0, 18);
-                bitmapBuilder.DrawText(device.Name, BitmapColor.White, 10); //TODO: Name and alignment.
+                bitmapBuilder.DrawText(device.Name, 0, 35, 50, 10, BitmapColor.White, 10, 8);
 
                 return bitmapBuilder.ToImage();
             }

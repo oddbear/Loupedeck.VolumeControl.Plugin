@@ -9,20 +9,26 @@ namespace Loupedeck.VolumeControlPlugin.Services
     public class NotificationService : MarshalByRefObject
     {
         public readonly Dictionary<string, CoreAudioDevice> Devices = new Dictionary<string, CoreAudioDevice>();
-        private readonly CoreAudioController _controller;
 
         public NotificationService()
         {
-            _controller = new CoreAudioController();
+            var controller = new CoreAudioController();
 
-            var devices = _controller.GetDevices(AudioSwitcher.AudioApi.DeviceType.All, DeviceState.All);
+            var devices = controller.GetDevices(AudioSwitcher.AudioApi.DeviceType.All, DeviceState.All);
 
             foreach (var device in devices)
             {
-                if (device.Name == "Unknown")
-                    continue;
+                try
+                {
+                    if (device.Name == "Unknown")
+                        continue;
 
-                Devices[device.RealId] = device;
+                    Devices[device.RealId] = device;
+                }
+                catch
+                {
+                    //Ignore failing devices.
+                }
             }
         }
     }
