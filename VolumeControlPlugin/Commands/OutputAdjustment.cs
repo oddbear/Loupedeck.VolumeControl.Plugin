@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 
 using AudioSwitcher.AudioApi;
 using AudioSwitcher.AudioApi.CoreAudio;
@@ -45,8 +46,8 @@ namespace Loupedeck.VolumeControlPlugin.Commands
             var device = GetDevice(actionParameter);
             if (IsDisabled(device))
                 return;
-
-            device.ToggleMute();
+            
+            Task.Run(() => device.SetMuteAsync(!device.IsMuted)).GetAwaiter().GetResult();
             base.ActionImageChanged(actionParameter);
         }
 
@@ -58,8 +59,14 @@ namespace Loupedeck.VolumeControlPlugin.Commands
             var device = GetDevice(actionParameter);
             if (IsDisabled(device))
                 return;
+            
+            var volume = device.Volume + ticks;
+            if (volume > 100)
+                volume = 100;
+            if (volume < 0)
+                volume = 0;
 
-            device.Volume += ticks;
+            Task.Run(() => device.SetVolumeAsync(volume)).GetAwaiter().GetResult();
             base.ActionImageChanged(actionParameter);
         }
 
