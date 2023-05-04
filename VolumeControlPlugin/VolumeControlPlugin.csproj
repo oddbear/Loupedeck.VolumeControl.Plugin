@@ -58,6 +58,8 @@
   <ItemGroup>
     <Compile Include="Commands\OutputAdjustment.cs" />
     <Compile Include="Commands\InputAdjustment.cs" />
+    <Compile Include="Commands\SetDefaultDeviceCommand.cs" />
+    <Compile Include="Helpers\DeviceHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\NotificationService.cs" />
     <Compile Include="VolumeControlApplication.cs" />
@@ -86,5 +88,6 @@
     <EmbeddedResource Include="Resources\VolumeControl\output-disabled-50.png" />
     <EmbeddedResource Include="Resources\VolumeControl\output-muted-50.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

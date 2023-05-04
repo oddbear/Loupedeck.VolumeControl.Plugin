@@ -1,14 +1,14 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 
-using AudioSwitcher.AudioApi;
-using AudioSwitcher.AudioApi.CoreAudio;
+using Loupedeck.VolumeControlPlugin.Helpers;
 
 namespace Loupedeck.VolumeControlPlugin.Commands
 {
     class InputAdjustment : PluginDynamicAdjustment
     {
         private VolumeControlPlugin _plugin;
+        private DeviceHelper _deviceHelper;
         
         public InputAdjustment()
             : base(true)
@@ -23,6 +23,8 @@ namespace Loupedeck.VolumeControlPlugin.Commands
             if (_plugin is null)
                 return false;
 
+            _deviceHelper = new DeviceHelper(_plugin);
+
             if (_plugin.NotificationService is null)
                 return false;
             
@@ -32,7 +34,7 @@ namespace Loupedeck.VolumeControlPlugin.Commands
 
             foreach (var input in inputs)
             {
-                this.AddParameter(input.Key, input.Value.FullName, "Inputs");
+                this.AddParameter(input.Key, input.Value.FullName, "Adjust Volume Inputs");
             }
 
             return true;
@@ -43,8 +45,8 @@ namespace Loupedeck.VolumeControlPlugin.Commands
             if (string.IsNullOrWhiteSpace(actionParameter))//Always null issue.
                 return;
 
-            var device = GetDevice(actionParameter);
-            if (IsDisabled(device))
+            var device = _deviceHelper.GetDevice(actionParameter);
+            if (_deviceHelper.IsDisabled(device))
                 return;
 
             Task.Run(() => device.SetMuteAsync(!device.IsMuted)).GetAwaiter().GetResult();
@@ -56,8 +58,8 @@ namespace Loupedeck.VolumeControlPlugin.Commands
             if (string.IsNullOrWhiteSpace(actionParameter))
                 return;
 
-            var device = GetDevice(actionParameter);
-            if (IsDisabled(device))
+            var device = _deviceHelper.GetDevice(actionParameter);
+            if (_deviceHelper.IsDisabled(device))
                 return;
             
             var volume = device.Volume + ticks;
@@ -75,8 +77,8 @@ namespace Loupedeck.VolumeControlPlugin.Commands
             if (string.IsNullOrWhiteSpace(actionParameter))
                 return null;
             
-            var device = GetDevice(actionParameter);
-            if (IsDisabled(device))
+            var device = _deviceHelper.GetDevice(actionParameter);
+            if (_deviceHelper.IsDisabled(device))
                 return "disabled";
 
             if (device.IsMuted)
@@ -90,7 +92,7 @@ namespace Loupedeck.VolumeControlPlugin.Commands
             if (string.IsNullOrWhiteSpace(actionParameter))
                 return null;
 
-            var device = GetDevice(actionParameter);
+            var device = _deviceHelper.GetDevice(actionParameter);
             if (device is null)
                 return null;
             
@@ -99,7 +101,7 @@ namespace Loupedeck.VolumeControlPlugin.Commands
                 var path = "Loupedeck.VolumeControlPlugin.Resources.VolumeControl.input-active-50.png";
                 if (device.IsMuted)
                     path = "Loupedeck.VolumeControlPlugin.Resources.VolumeControl.input-muted-50.png";
-                if (IsDisabled(device))
+                if (_deviceHelper.IsDisabled(device))
                     path = "Loupedeck.VolumeControlPlugin.Resources.VolumeControl.input-disabled-50.png";
 
                 var background = EmbeddedResources.ReadImage(path);
@@ -108,24 +110,6 @@ namespace Loupedeck.VolumeControlPlugin.Commands
 
                 return bitmapBuilder.ToImage();
             }
-        }
-
-        private bool IsDisabled(CoreAudioDevice device)
-        {
-            if (device is null)
-                return true;
-
-            return device.State != DeviceState.Active;
-        }
-
-        private CoreAudioDevice GetDevice(string actionParameter)
-        {
-            if (string.IsNullOrWhiteSpace(actionParameter))
-                return null;
-
-            return _plugin.NotificationService.Devices.TryGetValue(actionParameter, out var device)
-                ? device
-                : null;
         }
     }
 }

@@ -1,7 +1,5 @@
 namespace Loupedeck.VolumeControlPlugin
 {
-    using System;
-
     public class VolumeControlApplication : ClientApplication
     {
         public VolumeControlApplication()
