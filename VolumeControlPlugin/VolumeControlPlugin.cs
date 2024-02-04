@@ -1,3 +1,4 @@
+using Loupedeck.VolumeControlPlugin.Helpers;
 using Loupedeck.VolumeControlPlugin.Services;
 
 namespace Loupedeck.VolumeControlPlugin
@@ -8,6 +9,12 @@ namespace Loupedeck.VolumeControlPlugin
 
         public override bool HasNoApplication => true;
         public override bool UsesApplicationApiOnly => true;
+
+        public VolumeControlPlugin()
+        {
+            // Initialize the plugin log.
+            PluginLog.Init(this.Log);
+        }
 
         public override void Load()
         {
