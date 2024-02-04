@@ -47,7 +47,11 @@ namespace Loupedeck.VolumeControlPlugin.Commands
 
             var device = _deviceHelper.GetDevice(actionParameter);
             if (_deviceHelper.IsDisabled(device))
+{ 
+                //Update image in case the device was disconnected/disabled
+                base.ActionImageChanged(actionParameter);
                 return;
+}
 
             Task.Run(() => device.SetMuteAsync(!device.IsMuted)).GetAwaiter().GetResult();
             base.ActionImageChanged(actionParameter);
@@ -60,7 +64,12 @@ namespace Loupedeck.VolumeControlPlugin.Commands
 
             var device = _deviceHelper.GetDevice(actionParameter);
             if (_deviceHelper.IsDisabled(device))
+{
+                //Update image in case the device was disconnected/disabled
+                base.ActionImageChanged(actionParameter);
                 return;
+}
+                
             
             var volume = device.Volume + ticks;
             if (volume > 100)

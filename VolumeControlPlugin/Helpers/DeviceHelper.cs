@@ -20,7 +20,16 @@ namespace Loupedeck.VolumeControlPlugin.Helpers
             return device.State != DeviceState.Active;
         }
 
-        internal CoreAudioDevice GetDevice( string actionParameter)
+        internal bool IsActive(CoreAudioDevice device, bool isCommunication)
+        {
+            if (device is null)
+                return false;
+         
+            return isCommunication ? device.IsDefaultCommunicationsDevice : device.IsDefaultDevice;
+
+        }
+
+        internal CoreAudioDevice GetDevice(string actionParameter)
         {
             if (string.IsNullOrWhiteSpace(actionParameter))
                 return null;
