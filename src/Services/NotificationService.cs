@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-using AudioSwitcher.AudioApi;
+﻿using AudioSwitcher.AudioApi;
 using AudioSwitcher.AudioApi.CoreAudio;
 
 namespace Loupedeck.VolumeControlPlugin.Services
